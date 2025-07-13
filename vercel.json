@@ -1,8 +1,11 @@
 {
   "version": 2,
+  "name": "fromagerie-backend",
+  "installCommand": "npm install",
+  "buildCommand": "npm run build",
   "routes": [
     {
-      "src": "(.*)",
+      "src": "/api/(.*)",
       "dest": "/server.js"
     },
     {
