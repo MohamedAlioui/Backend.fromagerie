@@ -1,9 +1,23 @@
-import puppeteer from "puppeteer";
+import puppeteer from "puppeteer-core";
+import chromium from "@sparticuz/chromium";
 
 export async function generateInvoicePDF(invoice) {
   const browser = await puppeteer.launch({
-    headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    args: [
+      ...chromium.args,
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage",
+      "--disable-gpu",
+      "--single-process",
+      "--no-zygote",
+      "--disable-extensions"
+    ],
+    defaultViewport: chromium.defaultViewport,
+    executablePath: process.env.NODE_ENV === 'production' 
+      ? await chromium.executablePath() 
+      : puppeteer.executablePath(),
+    headless: chromium.headless,
   });
 
   try {
