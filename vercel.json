@@ -5,7 +5,7 @@
   "installCommand": "npm install && cd ../frontend && npm install",
   "routes": [
     {
-      "src": "/api/(.*)",
+      "src": "(.*)",
       "dest": "/server.js"
     },
     {
