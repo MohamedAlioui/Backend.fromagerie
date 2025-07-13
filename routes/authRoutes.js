@@ -2,36 +2,49 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import { authenticateToken } from "../middleware/auth.js";
+import mongoose from 'mongoose';
 
 const router = express.Router();
+
+// Fonction pour attendre la connexion
+async function ensureConnection() {
+  if (mongoose.connection.readyState !== 1) {
+    await new Promise((resolve) => {
+      mongoose.connection.once('connected', resolve);
+    });
+  }
+}
 
 // Generate JWT token
 const generateToken = (userId) => {
   return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "7d" });
 };
 
-// Create demo user on first run
-const createDemoUser = async () => {
+async function createDemoUser() {
   try {
-    const existingDemo = await User.findOne({ username: "demo" });
-    if (!existingDemo) {
-      const demoUser = new User({
-        username: "demo",
-        email: "demo@fromagerie-alioui.com",
-        password: "demo123",
-        role: "admin",
-      });
-      await demoUser.save();
-      console.log(
-        "✅ Demo user created successfully: username=demo, password=demo123"
-      );
-    } else {
-      console.log("✅ Demo user already exists");
+    // Attendre que la connexion soit établie
+    await ensureConnection();
+    
+    const existingUser = await User.findOne({ email: 'demo@fromagerie-alioui.com' });
+    if (existingUser) {
+      console.log('Demo user already exists');
+      return;
     }
+
+    const demoUser = new User({
+      username: "demo",
+      email: "demo@fromagerie-alioui.com",
+      password: "demo123",
+      role: "admin",
+    });
+    await demoUser.save();
+    console.log(
+      "✅ Demo user created successfully: username=demo, password=demo123"
+    );
   } catch (error) {
-    console.error("❌ Error creating demo user:", error);
+    console.error('❌ Error creating demo user:', error);
   }
-};
+}
 
 // Register new user
 router.post("/register", async (req, res) => {
@@ -220,7 +233,7 @@ router.put("/change-password", authenticateToken, async (req, res) => {
   }
 });
 
-// Initialize demo user when routes are loaded
-createDemoUser();
+// Supprimez ou commentez cette ligne
+// createDemoUser();
 
 export default router;
