@@ -1,20 +1,15 @@
 {
   "version": 2,
-  "name": "fromagerie-backend",
   "builds": [
     {
-      "src": "./server.js",
+      "src": "server.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
-      "src": "(.*)",
-      "dest": "/server.js"
-    },
-    {
       "src": "/(.*)",
-      "dest": "/"
+      "dest": "/server.js"
     }
   ]
 }

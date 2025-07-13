@@ -1,47 +1,9 @@
-import puppeteer from "puppeteer-core";
-import chromium from "@sparticuz/chromium";
+// import puppeteer from "puppeteer-core";
+// import chromium from "@sparticuz/chromium";
 
 export async function generateInvoicePDF(invoice) {
-  const browser = await puppeteer.launch({
-    args: [
-      ...chromium.args,
-      "--no-sandbox",
-      "--disable-setuid-sandbox",
-      "--disable-dev-shm-usage",
-      "--disable-gpu",
-      "--single-process",
-      "--no-zygote",
-      "--disable-extensions"
-    ],
-    defaultViewport: chromium.defaultViewport,
-    executablePath: process.env.NODE_ENV === 'production' 
-      ? await chromium.executablePath() 
-      : puppeteer.executablePath(),
-    headless: chromium.headless,
-  });
-
-  try {
-    const page = await browser.newPage();
-    const htmlContent = generateInvoiceHTML(invoice);
-    await page.setContent(htmlContent, {
-      waitUntil: "networkidle0",
-    });
-
-    const pdf = await page.pdf({
-      format: "A4",
-      printBackground: true,
-      margin: {
-        top: "10mm",
-        right: "10mm",
-        bottom: "10mm",
-        left: "10mm",
-      },
-    });
-
-    return pdf;
-  } finally {
-    await browser.close();
-  }
+  // Version temporaire sans Puppeteer
+  return Buffer.from(`PDF simulé pour la facture ${invoice.id}`);
 }
 
 function generateInvoiceHTML(invoice) {
