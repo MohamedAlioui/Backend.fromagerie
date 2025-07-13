@@ -1,0 +1,30 @@
+{
+  "version": 2,
+  "name": "fromagerie-fullstack",
+  "buildCommand": "npm run build:full",
+  "installCommand": "npm install && cd ../frontend && npm install",
+  "builds": [
+    {
+      "src": "server.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/server.js"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  },
+  "functions": {
+    "server.js": {
+      "maxDuration": 30
+    }
+  }
+}
