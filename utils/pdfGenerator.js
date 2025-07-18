@@ -1,9 +1,33 @@
-// import puppeteer from "puppeteer-core";
-// import chromium from "@sparticuz/chromium";
+import puppeteer from "puppeteer";
 
 export async function generateInvoicePDF(invoice) {
-  // Version temporaire sans Puppeteer
-  return Buffer.from(`PDF simulé pour la facture ${invoice.id}`);
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  });
+
+  try {
+    const page = await browser.newPage();
+    const htmlContent = generateInvoiceHTML(invoice);
+    await page.setContent(htmlContent, {
+      waitUntil: "networkidle0",
+    });
+
+    const pdf = await page.pdf({
+      format: "A4",
+      printBackground: true,
+      margin: {
+        top: "10mm",
+        right: "10mm",
+        bottom: "10mm",
+        left: "10mm",
+      },
+    });
+
+    return pdf;
+  } finally {
+    await browser.close();
+  }
 }
 
 function generateInvoiceHTML(invoice) {
@@ -51,7 +75,7 @@ function generateInvoiceHTML(invoice) {
                   <p class="text-sm text-gray-700 mb-1">Zhena, Utique Bizerte</p>
                   <p class="text-sm text-gray-700 mb-1"><strong>TEL:</strong> 98136638</p>
                   <p class="text-sm text-gray-700"><strong>MF:</strong> 1798066/G</p>
-                  <p class="text-sm text-gray-700">Livreur :Alioui Ayoub</p>
+                  <p class="text-sm text-gray-700">Livreur :laamiri omar  </p>
                 </div>
               </div>
               <!-- Right side - Invoice Info and Client Details -->
@@ -126,7 +150,7 @@ function generateInvoiceHTML(invoice) {
               <tr>
                 <td class="border border-black px-4 py-2 bg-gray-100 font-bold">TVA (19%)</td>
                 <td class="border border-black px-4 py-2 text-right">${formatCurrency(
-                  invoice.totalHT *0.19 || 0
+                  (invoice.totalHT || 0) * 0.19
                 )}</td>
               </tr>
               <tr>
