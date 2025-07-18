@@ -1,16 +1,40 @@
-import puppeteer from "puppeteer";
+import puppeteer from "puppeteer-core";
+import chromium from "@sparticuz/chromium";
 
 export async function generateInvoicePDF(invoice) {
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
-  });
-
+  let browser = null;
+  
   try {
+    // Configuration pour production (Vercel) et développement local
+    const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL;
+    
+    if (isProduction) {
+      // Configuration pour Vercel avec @sparticuz/chromium
+      browser = await puppeteer.launch({
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        executablePath: await chromium.executablePath(),
+        headless: chromium.headless,
+        ignoreHTTPSErrors: true,
+      });
+    } else {
+      // Configuration pour développement local
+      const puppeteerRegular = await import("puppeteer");
+      browser = await puppeteerRegular.default.launch({
+        headless: true,
+        args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      });
+    }
+
     const page = await browser.newPage();
+    
+    // Configuration de la page
+    await page.setViewport({ width: 1200, height: 800 });
+    
     const htmlContent = generateInvoiceHTML(invoice);
     await page.setContent(htmlContent, {
       waitUntil: "networkidle0",
+      timeout: 30000,
     });
 
     const pdf = await page.pdf({
@@ -25,8 +49,13 @@ export async function generateInvoicePDF(invoice) {
     });
 
     return pdf;
+  } catch (error) {
+    console.error('Error in PDF generation:', error);
+    throw new Error(`Erreur lors de la génération du PDF: ${error.message}`);
   } finally {
-    await browser.close();
+    if (browser) {
+      await browser.close();
+    }
   }
 }
 
@@ -56,6 +85,9 @@ function generateInvoiceHTML(invoice) {
         .border-black {
           border-color: #000 !important;
         }
+        @media print {
+          body { margin: 0; }
+        }
       </style>
     </head>
     <body class="text-gray-900 font-sans">
@@ -68,7 +100,9 @@ function generateInvoiceHTML(invoice) {
               <!-- Left side - Logo and Company Info -->
               <div class="flex flex-col">
                 <div class="mb-4">
-                  <img src="https://i.ibb.co/ZzzzhdRN/LOGO1.png" alt="Logo" width="100" />
+                  <img src="https://i.ibb.co/ZzzzhdRN/LOGO1.png" alt="Fromagerie Alioui Logo" width="120" 
+                       style="max-width: 100px; max-height: 70px; object-fit: contain; border-radius: 4px;"
+                       onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width:100px;height:70px;background:#f8f9fa;border:1px solid #dee2e6;display:flex;align-items:center;justify-content:center;text-align:center;color:#666;font-size:10px;border-radius:4px;\'>FROMAGERIE<br>ALIOUI</div>';" />
                 </div>
                 <div>
                   <h3 class="text-lg font-bold text-gray-900 mb-2">Fromagerie Alioui</h3>

@@ -21,6 +21,8 @@
     "mongoose": "^8.0.0",
     "morgan": "^1.10.0",
     "puppeteer": "^21.0.0",
+    "puppeteer-core": "^21.0.0",
+    "@sparticuz/chromium": "^118.0.0",
     "winston": "^3.11.0"
   },
   "devDependencies": {
